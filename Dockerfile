@@ -1,4 +1,4 @@
-FROM lambci/lambda-base:build
+FROM lambci/lambda-base-2:build
 
 # Using instructions from:
 # https://trac.ffmpeg.org/wiki/CompilationGuide/Centos
@@ -20,6 +20,8 @@ RUN yum install -y install autoconf \
   libfdk-aac-dev
 
 RUN mkdir ~/ffmpeg_sources
+
+RUN yum update -y ca-certificates
 
 # Install Nasm
 # An assembler used by some libraries. Highly recommended or your resulting build may be very slow.
@@ -54,8 +56,8 @@ RUN cd ~/ffmpeg_sources && \
 # Install libx265
 # H.265/HEVC video encoder.
 RUN cd ~/ffmpeg_sources && \
-  hg clone https://bitbucket.org/multicoreware/x265 && \
-  cd ~/ffmpeg_sources/x265/build/linux && \
+  git clone https://bitbucket.org/multicoreware/x265_git && \
+  cd ~/ffmpeg_sources/x265_git/build/linux && \
   PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DENABLE_SHARED:bool=off ../../source && \
   PATH="$HOME/bin:$PATH" make && \
   make install
@@ -127,12 +129,10 @@ RUN cd ~/ffmpeg_sources && \
   PATH="$HOME/bin:$PATH" make install
 
 RUN mkdir -p $HOME/lib && \
-  cp /usr/lib64/libxcb*.so.* $HOME/lib && \
-  cp /usr/lib64/libfreetype*.so.* $HOME/lib && \
-  cp /usr/lib64/libbz2*.so $HOME/lib && \
-  cp /usr/lib64/libbz2.so $HOME/lib/libbz2.so.1 && \
-  cp /usr/lib64/liblzma.so* $HOME/lib && \
-  cp /usr/lib64/libXau.so* $HOME/lib
+ cp /usr/lib64/libfreetype*.so.* $HOME/lib && \
+ cp /usr/lib64/libbz2*.so $HOME/lib && \
+ cp /usr/lib64/libbz2.so $HOME/lib/libbz2.so.1 && \
+ cp /usr/lib64/liblzma.so* $HOME/lib
 
 RUN rm -rf $HOME/ffmpeg_sources && \
   rm -rf $HOME/ffmpeg_build
